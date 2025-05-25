@@ -10,11 +10,49 @@ import {
 import { z } from 'zod';
 import { MinecraftAgent } from './minecraft/agent.js';
 
+// Parse command line arguments
+function parseArgs() {
+  const args = process.argv.slice(2);
+  const config = {
+    host: 'localhost',
+    port: 25565,
+    username: '',
+    version: '1.20.4',
+    autoConnect: false
+  };
+
+  for (let i = 0; i < args.length; i += 2) {
+    const key = args[i];
+    const value = args[i + 1];
+    
+    switch (key) {
+      case '--host':
+        config.host = value;
+        break;
+      case '--port':
+        config.port = parseInt(value) || 25565;
+        break;
+      case '--username':
+        config.username = value;
+        config.autoConnect = true; // Auto-connect if username is provided
+        break;
+      case '--version':
+        config.version = value;
+        break;
+    }
+  }
+
+  return config;
+}
+
 class LayrMCPServer {
   private server: Server;
   private minecraftAgent: MinecraftAgent;
+  private defaultConfig: ReturnType<typeof parseArgs>;
 
   constructor() {
+    this.defaultConfig = parseArgs();
+    
     this.server = new Server(
       {
         name: 'layr-minecraft-mcp',
@@ -44,25 +82,26 @@ class LayrMCPServer {
               properties: {
                 host: {
                   type: 'string',
-                  description: 'Minecraft server host (default: localhost)',
-                  default: 'localhost',
+                  description: `Minecraft server host (default: ${this.defaultConfig.host})`,
+                  default: this.defaultConfig.host,
                 },
                 port: {
                   type: 'number',
-                  description: 'Minecraft server port (default: 25565)',
-                  default: 25565,
+                  description: `Minecraft server port (default: ${this.defaultConfig.port})`,
+                  default: this.defaultConfig.port,
                 },
                 username: {
                   type: 'string',
-                  description: 'Bot username',
+                  description: `Bot username${this.defaultConfig.username ? ` (default: ${this.defaultConfig.username})` : ''}`,
+                  default: this.defaultConfig.username || undefined,
                 },
                 version: {
                   type: 'string',
-                  description: 'Minecraft version (default: 1.20.4)',
-                  default: '1.20.4',
+                  description: `Minecraft version (default: ${this.defaultConfig.version})`,
+                  default: this.defaultConfig.version,
                 },
               },
-              required: ['username'],
+              required: this.defaultConfig.username ? [] : ['username'], // Username not required if provided via CLI
             },
           },
           {
@@ -149,7 +188,20 @@ class LayrMCPServer {
         switch (name) {
           case 'connect_minecraft':
             if (!args) throw new Error('Missing arguments');
-            return await this.minecraftAgent.connect(args as any);
+            
+            // Merge CLI defaults with provided arguments
+            const connectOptions = {
+              host: (args.host as string) || this.defaultConfig.host,
+              port: (args.port as number) || this.defaultConfig.port,
+              username: (args.username as string) || this.defaultConfig.username,
+              version: (args.version as string) || this.defaultConfig.version,
+            };
+            
+            if (!connectOptions.username) {
+              throw new Error('Username is required');
+            }
+            
+            return await this.minecraftAgent.connect(connectOptions);
 
           case 'disconnect_minecraft':
             return await this.minecraftAgent.disconnect();
@@ -213,6 +265,22 @@ class LayrMCPServer {
     const transport = new StdioServerTransport();
     await this.server.connect(transport);
     console.error('Layr Minecraft MCP Server started');
+    
+    // Auto-connect if username was provided via CLI
+    if (this.defaultConfig.autoConnect && this.defaultConfig.username) {
+      console.error(`Auto-connecting to Minecraft server as ${this.defaultConfig.username}...`);
+      try {
+        await this.minecraftAgent.connect({
+          host: this.defaultConfig.host,
+          port: this.defaultConfig.port,
+          username: this.defaultConfig.username,
+          version: this.defaultConfig.version,
+        });
+        console.error('Auto-connection successful!');
+      } catch (error) {
+        console.error('Auto-connection failed:', error instanceof Error ? error.message : String(error));
+      }
+    }
   }
 }
 

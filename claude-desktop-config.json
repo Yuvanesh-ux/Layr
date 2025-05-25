@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "layr-minecraft": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "github:Yuvanesh-ux/Layr"
+      ]
+    }
+  }
+} 

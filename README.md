@@ -9,6 +9,84 @@ Layr is a Model Context Protocol (MCP) server that enables Claude Desktop to hel
 - **Building Assistance**: Get intelligent help with Minecraft construction projects
 - **Real-time Status**: Monitor bot health, position, and server status
 
+## Quick Setup for Claude Desktop
+
+### Simple GitHub Setup (Recommended)
+
+Add this to your Claude Desktop MCP configuration file:
+
+**macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+**Windows**: `%APPDATA%/Claude/claude_desktop_config.json`
+**Linux**: `~/.config/Claude/claude_desktop_config.json`
+
+```json
+{
+  "mcpServers": {
+    "layr-minecraft": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "github:Yuvanesh-ux/Layr"
+      ]
+    }
+  }
+}
+```
+
+That's it! Claude Desktop will automatically download, build, and run the server from GitHub.
+
+### With Connection Parameters
+
+You can also pass default connection parameters:
+
+```json
+{
+  "mcpServers": {
+    "layr-minecraft": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "github:Yuvanesh-ux/Layr",
+        "--host",
+        "localhost",
+        "--port",
+        "25565",
+        "--username",
+        "ClaudeBot"
+      ]
+    }
+  }
+}
+```
+
+### Local Development Setup
+
+For local development:
+
+1. Clone this repository:
+```bash
+git clone https://github.com/Yuvanesh-ux/Layr.git
+cd Layr
+```
+
+2. Install dependencies and build:
+```bash
+npm install
+npm run build
+```
+
+3. Use local configuration:
+```json
+{
+  "mcpServers": {
+    "layr-minecraft": {
+      "command": "node",
+      "args": ["/absolute/path/to/Layr/dist/index.js"]
+    }
+  }
+}
+```
+
 ## Installation
 
 1. Clone this repository:
@@ -60,20 +138,15 @@ The MCP server provides the following tools:
 - **break_block**: Break a block at specified coordinates
 - **scan_area**: Scan an area and return block information
 
-### Configuring Claude Desktop
+### Using with Claude Desktop
 
-Add this server to your Claude Desktop MCP configuration:
+Once configured, you can use these commands in Claude Desktop:
 
-```json
-{
-  "mcpServers": {
-    "layr-minecraft": {
-      "command": "node",
-      "args": ["/path/to/Layr/dist/index.js"]
-    }
-  }
-}
-```
+1. **Connect to Minecraft**: "Connect to my local Minecraft server with username 'Builder'"
+2. **Check status**: "What's the current status of the Minecraft bot?"
+3. **Build something**: "Place a stone block at coordinates 10, 64, 10"
+4. **Move around**: "Move the bot to coordinates 0, 70, 0"
+5. **Scan areas**: "Scan the area from 0,60,0 to 10,70,10"
 
 ## Configuration
 
@@ -111,6 +184,22 @@ This is currently a skeleton implementation with placeholder functionality. The 
 - [ ] Multi-step construction planning
 - [ ] Inventory management
 - [ ] Error handling and recovery
+
+## Troubleshooting
+
+### Claude Desktop Not Finding the Server
+
+1. Ensure you have Node.js installed
+2. Check your internet connection (for GitHub setup)
+3. Restart Claude Desktop after configuration changes
+4. Verify the configuration file syntax is correct
+
+### Connection Issues
+
+1. Make sure your Minecraft server is running
+2. Check firewall settings
+3. Verify the server version matches your Minecraft version
+4. Ensure the bot username isn't already taken
 
 ## Contributing
 

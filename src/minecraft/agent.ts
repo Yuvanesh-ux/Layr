@@ -2,6 +2,8 @@ import mineflayer, { Bot } from 'mineflayer';
 import { Vec3 } from 'vec3';
 import { ServerResult } from '@modelcontextprotocol/sdk/types.js';
 
+// TESTING PR CHANGES
+
 interface ConnectOptions {
   host?: string;
   port?: number;
